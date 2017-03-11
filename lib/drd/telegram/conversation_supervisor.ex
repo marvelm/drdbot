@@ -7,7 +7,7 @@ defmodule Drd.Telegram.Conversation.Supervisor do
     Supervisor.start_link(__MODULE__, [], [name: __MODULE__])
   end
 
-  def init(arg) do
+  def init(_arg) do
     children = [
       worker(Telegram.Conversation, [], restart: :transient)
     ]

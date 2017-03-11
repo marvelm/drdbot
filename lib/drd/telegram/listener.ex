@@ -8,7 +8,8 @@ defmodule Drd.Telegram.Listener do
   Initializes the worker with an update offset of 0.
   """
   def start_link do
-    GenServer.start_link(__MODULE__, 0)
+    offset = read_offset_file() || 0
+    GenServer.start_link(__MODULE__, offset)
   end
 
   def init(offset) do
@@ -23,13 +24,12 @@ defmodule Drd.Telegram.Listener do
     Logger.debug "updates #{inspect updates}"
 
     broadcast_updates(updates)
-    save_offset(offset)
+    save_offset_file!(offset)
 
-    last_update = List.last updates
     next_offset =
-      case last_update do
+      case List.last updates do
         nil -> offset
-        _ -> last_update["update_id"] + 1
+        last_update -> last_update["update_id"] + 1
       end
 
     {:noreply, next_offset}
@@ -41,6 +41,7 @@ defmodule Drd.Telegram.Listener do
         %{"message" => %{"from" => %{"id" => sender_id}}} ->
           send_update(sender_id, update)
         _ ->
+          Logger.info "unknown-update-type #{inspect update}"
       end
     end)
   end
@@ -57,6 +58,16 @@ defmodule Drd.Telegram.Listener do
     GenServer.cast(conversation, {:update, update})
   end
 
-  def save_offset(offset) do
+  defp save_offset_file!(offset) do
+    offset_file = Application.get_env(:drd, :offset_file)
+    File.write!(offset_file, "#{offset}")
+  end
+
+  defp read_offset_file() do
+    offset_file = Application.get_env(:drd, :offset_file)
+    case File.read!(offset_file) do
+      {:ok, raw} -> Integer.parse(raw)
+      _ -> nil
+    end
   end
 end

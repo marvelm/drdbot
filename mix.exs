@@ -10,11 +10,7 @@ defmodule Drd.Mixfile do
      deps: deps()]
   end
 
-  # Configuration for the OTP application
-  #
-  # Type "mix help compile.app" for more information
   def application do
-    # Specify extra applications you'll use from Erlang/Elixir
     [extra_applications: applications(Mix.env),
      mod: {Drd.Application, []}]
   end

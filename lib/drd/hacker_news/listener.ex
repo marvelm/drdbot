@@ -23,7 +23,11 @@ defmodule Drd.HackerNews.Listener do
     new_story_ids = MapSet.difference(story_ids, last_story_ids)
 
     stories = Enum.map(new_story_ids, &(HackerNews.item!(&1)))
+    broadcast_stories!(stories)
 
     {:noreply, new_story_ids}
+  end
+
+  def broadcast_stories!(_stories) do
   end
 end

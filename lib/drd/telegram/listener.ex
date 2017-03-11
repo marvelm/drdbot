@@ -9,6 +9,7 @@ defmodule Drd.Telegram.Listener do
   """
   def start_link do
     offset = read_offset_file() || 0
+    Logger.info "starting-offset #{offset}"
     GenServer.start_link(__MODULE__, offset)
   end
 
@@ -38,19 +39,19 @@ defmodule Drd.Telegram.Listener do
   defp broadcast_updates(updates) do
     Enum.each(updates, fn update ->
       case update do
-        %{"message" => %{"from" => %{"id" => sender_id}}} ->
-          send_update(sender_id, update)
+        %{"message" => %{"chat" => %{"id" => chat_id}}} ->
+          send_update(chat_id, update)
         _ ->
           Logger.info "unknown-update-type #{inspect update}"
       end
     end)
   end
 
-  defp send_update(sender_id, update) do
+  defp send_update(chat_id, update) do
     conversation =
-      case Registry.lookup(Registry.Conversations, sender_id) do
+      case Registry.lookup(Registry.Conversations, chat_id) do
         [] ->
-          {:ok, pid} = Supervisor.start_child(Telegram.Conversation.Supervisor, [[sender_id], []])
+          {:ok, pid} = Supervisor.start_child(Telegram.Conversation.Supervisor, [chat_id, []])
           pid
         [{pid, _value}] -> pid
       end
@@ -65,8 +66,10 @@ defmodule Drd.Telegram.Listener do
 
   defp read_offset_file() do
     offset_file = Application.get_env(:drd, :offset_file)
-    case File.read!(offset_file) do
-      {:ok, raw} -> Integer.parse(raw)
+    case File.read(offset_file) do
+      {:ok, raw} ->
+        {offset, _} = Integer.parse(raw)
+        offset
       _ -> nil
     end
   end

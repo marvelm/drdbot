@@ -11,7 +11,7 @@ defmodule Drd.Application do
 
     # Define workers and child supervisors to be supervised
     children = [
-      #worker(Telegram.Listener, []),
+      worker(Telegram.Listener, []),
       worker(HackerNews.Listener, []),
 
       supervisor(Registry, [:unique, Registry.Conversations]),

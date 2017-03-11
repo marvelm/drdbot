@@ -16,9 +16,11 @@ defmodule Drd.Telegram do
   end
 
   def send_message!(to, text, override \\ %{}) do
+    Logger.debug "message-override #{inspect override}"
     message = Map.merge(%{"chat_id" => to,
                           "text" => text,
                           "parse_mode" => "HTML"}, override)
+    Logger.debug "sending-message #{inspect message}"
     post!("/sendMessage", message)
   end
 

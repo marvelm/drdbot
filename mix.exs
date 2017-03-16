@@ -16,13 +16,14 @@ defmodule Drd.Mixfile do
   end
 
   defp applications(:dev), do: applications(:all) ++ [:remix]
-  defp applications(_all), do: [:logger, :httpoison]
+  defp applications(_all) do
+    [:logger,
+     :httpoison]
+  end
 
   defp deps do
-    [
-      {:httpoison, "~> 0.11.0"},
-      {:poison, "~> 3.1.0"},
-      {:remix, "~> 0.0.1", only: :dev}
-    ]
+    [{:httpoison, "~> 0.11.0"},
+     {:poison, "~> 3.1.0"},
+     {:remix, "~> 0.0.1", only: :dev}]
   end
 end

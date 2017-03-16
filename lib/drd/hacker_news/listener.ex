@@ -12,7 +12,10 @@ defmodule Drd.HackerNews.Listener do
   """
   def start_link do
     story_ids_file = Application.get_env(:drd, :story_ids_file)
-    story_ids = File.read!(story_ids_file) |> Poison.decode!
+    story_ids = case File.read(story_ids_file) do
+      {:ok, raw} -> Poison.decode!(raw)
+      _ -> [] 
+    end
 
     GenServer.start_link(__MODULE__, MapSet.new(story_ids))
   end

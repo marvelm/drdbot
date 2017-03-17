@@ -1,6 +1,7 @@
 defmodule Drd.Elasticsearch do
   defp url(path) do
-    "http://localhost:9200#{path}"
+    host = Application.get_env(:drd, :elasticsearch_host)
+    "#{host}#{path}"
   end
 
   defp create_index!(index, mappings) do

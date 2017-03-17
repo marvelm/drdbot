@@ -14,7 +14,7 @@ defmodule Drd.HackerNews.Listener do
     story_ids_file = Application.get_env(:drd, :story_ids_file)
     story_ids = case File.read(story_ids_file) do
       {:ok, raw} -> Poison.decode!(raw)
-      _ -> [] 
+      _ -> []
     end
 
     GenServer.start_link(__MODULE__, MapSet.new(story_ids))
@@ -31,8 +31,8 @@ defmodule Drd.HackerNews.Listener do
     story_ids = MapSet.new(HackerNews.topstories!())
     new_story_ids = MapSet.difference(story_ids, last_story_ids)
 
-    stories = Enum.map(new_story_ids, &(HackerNews.item!(&1)))
-    Enum.each(stories, &(Elasticsearch.add_hn_story!(&1)))
+    new_stories = Enum.map(new_story_ids, &(HackerNews.item!(&1)))
+    Enum.each(new_stories, &(Elasticsearch.add_hn_story!(&1)))
 
     save_story_ids_file!(new_story_ids)
     {:noreply, new_story_ids}

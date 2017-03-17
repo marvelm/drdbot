@@ -28,13 +28,18 @@ defmodule Drd.HackerNews.Listener do
   def handle_info(:fetch_updates, last_story_ids) do
     Process.send_after(self(), :fetch_updates, @interval)
 
+    Logger.debug "fetching stories"
     story_ids = MapSet.new(HackerNews.topstories!())
-    new_story_ids = MapSet.difference(story_ids, last_story_ids)
 
+    new_story_ids = MapSet.difference(story_ids, last_story_ids)
+    Logger.debug "new-stories: #{Enum.count(new_story_ids)}"
     new_stories = Enum.map(new_story_ids, &(HackerNews.item!(&1)))
+
+    Logger.debug "persisting-stories"
     Enum.each(new_stories, &(Elasticsearch.add_hn_story!(&1)))
 
-    save_story_ids_file!(new_story_ids)
+    story_ids = MapSet.union(story_ids, new_story_ids)
+    save_story_ids_file!(story_ids)
     {:noreply, new_story_ids}
   end
 
